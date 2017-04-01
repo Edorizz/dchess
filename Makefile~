@@ -1,0 +1,3 @@
+CC = gcc
+CFILES = $(wildcard src/*.c)
+OBJFILES = $(
