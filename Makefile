@@ -9,8 +9,11 @@ NAME := dchess
 $(NAME): $(OBJ_FILES)
 	$(CC) $(LDFLAGS) $^ -o $@
 
-obj/%.o: src/%.c
-	$(CC) $(CFLAGS) $< -o $@
+obj/main.o: src/main.c include/dchess.h
+	$(CC) $(CFLAGS) src/main.c -o $@
+
+obj/dchess.o: src/dchess.c include/dchess.h
+	$(CC) $(CFLAGS) src/dchess.c -o $@
 
 clean:
 	$(RM) obj/*.o $(NAME)

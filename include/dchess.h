@@ -6,8 +6,13 @@
 #define BOARD_HEIGHT	8
 
 /* Extra */
-#define MAX_INPUT	10
-#define COMMAND_COUNT	2
+#define MAX_INPUT	256
+#define COMMAND_COUNT	4
+
+/* Flags */
+#define NONE		0
+#define FRIENDLIES	1
+#define ENEMIES		2
 
 /* Bit flags */
 #define WHITE_PIECE	3
@@ -19,7 +24,7 @@
 
 /* Byte manipulation */
 #define BLOCK(l, r)		(((l) << 4) | (r))
-#define WHITE_BLOCK(l, r)	(BLOCK(((l) | BIT(WHITE_PIECE)), ((r) | BIT(WHITE_PIECE)))) /* ONLY USED FOR INITIALIZATION */
+#define WHITE_BLOCK(l, r)	(BLOCK(((l) | BIT(WHITE_PIECE)), ((r) | BIT(WHITE_PIECE))))
 #define LEFT_PIECE(b)		(((b) & 0xF0) >> 4)
 #define RIGHT_PIECE(b)		((b) & 0x0F)
 
@@ -37,12 +42,22 @@ typedef struct {
 	void(*cmd)(chess_state*);
 } command;
 
+extern const command commands[COMMAND_COUNT];
+
 /* Game functions */
 void init_board(chess_state *game);
 void print_block(BYTE block);
 void print_board(chess_state *game);
+BYTE read_at(chess_state *game, int row, int col);
+void write_at(chess_state *game, int row, int col, BYTE piece);
+int  relationship(BYTE p1, BYTE p2);
+int  valid_movement(chess_state *game, int crow, int ccol, int trow, int tcol);
+void move_piece(chess_state *game, int crow, int ccol, int trow, int tcol);
+void move(chess_state *game, const char *input);
 /* Commands */
 void cmd_exit(chess_state *game);
+void cmd_help(chess_state *game);
+void cmd_status(chess_state *game);
 
 #endif /* DCHESS_H */
 
