@@ -5,6 +5,8 @@
 /* Chess header file */
 #include <dchess.h>
 
+#define MAX_INPUT	256
+
 int
 main(int argc, char **argv)
 {

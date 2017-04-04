@@ -6,13 +6,12 @@
 #define BOARD_HEIGHT	8
 
 /* Extra */
-#define MAX_INPUT	256
 #define COMMAND_COUNT	4
 
 /* Flags */
 #define NONE		0
-#define FRIENDLIES	1
-#define ENEMIES		2
+#define FRIENDLY	1
+#define ENEMY		2
 
 /* Bit flags */
 #define WHITE_PIECE	3

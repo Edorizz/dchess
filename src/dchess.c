@@ -87,14 +87,115 @@ write_at(chess_state *game, int row, int col, BYTE piece)
 }
 
 int
+relationship(BYTE p1, BYTE p2)
+{
+	if (p1 == 0 || p2 == 0)
+		return NONE;
+
+	if ((p1 ^ p2) & BIT(WHITE_PIECE))
+		return ENEMY;
+
+	return FRIENDLY;
+}
+
+int
+line_test(chess_state *game, int crow, int ccol, int trow, int tcol)
+{
+	int i, j;
+	
+	if (crow == trow) {
+		if (ccol > tcol)
+			return line_test(game, trow, tcol, crow, ccol);
+
+		while (++ccol < tcol) {
+			if (read_at(game, crow, ccol))
+				return 0;
+		}
+	} else if (ccol == tcol) {
+		if (crow > trow)
+			return line_test(game, trow, tcol, crow, ccol);
+
+		while (++crow < trow) {
+			if (read_at(game, crow, ccol))
+				return 0;
+		}
+	} else if (abs(crow - trow) == abs(ccol - tcol)) {
+		i = (trow - crow) / abs(trow - crow);
+		j = (tcol - ccol) / abs(tcol - ccol);
+
+		while ((crow += i) != trow) {
+			if (read_at(game, crow, ccol += j))
+				return 0;
+		}
+	} else {
+		return 0;
+	}
+
+	return 1;
+}
+
+int
 valid_movement(chess_state *game, int crow, int ccol, int trow, int tcol)
 {
 	BYTE current = read_at(game, crow, ccol);
 	BYTE target = read_at(game, trow, tcol);
+	int rel, rdiff, cdiff;
 
-	/* Return false if color of target and moving piece are the same */
-	if (!((current ^ target) & BIT(WHITE_PIECE)) && target != 0)
+	if ((rel = relationship(current, target)) == FRIENDLY)
 		return 0;
+
+	rdiff = crow - trow;
+	cdiff = ccol - tcol;
+
+	switch (current & 0x7) {
+	case PAWN:
+		if (rel == ENEMY) {
+			if (current & BIT(WHITE_PIECE)) {
+				if (rdiff != 1 || abs(cdiff) != 1)
+					return 0;
+			} else if (rdiff != -1 || abs(cdiff) != 1) {
+					return 0;
+			}
+		} else {
+			if (current & BIT(WHITE_PIECE)) {
+				if (ccol != tcol || rdiff != 1)
+					return 0;
+			} else if (ccol != tcol || rdiff != -1) {
+					return 0;
+			}
+		}
+
+		break;
+	case ROOK:
+		if ((rdiff && cdiff) || !line_test(game, crow, ccol, trow, tcol))
+			return 0;
+
+		break;
+	case KNIGHT:
+		if ((abs(rdiff) + abs(cdiff) != 3) || (abs(rdiff) != 1 && abs(cdiff) != 1))
+			return 0;
+
+		break;
+	case BISHOP:
+		if (abs(rdiff) != abs(cdiff) || !line_test(game, crow, ccol, trow, tcol))
+			return 0;
+
+		break;
+	case QUEEN:
+		if (((rdiff && cdiff) || !line_test(game, crow, ccol, trow, tcol)) &&
+		    (abs(rdiff) != abs(cdiff) || !line_test(game, crow, ccol, trow, tcol)))
+			return 0;
+
+		break;
+	case KING:
+		if (abs(rdiff) > 1 || abs(cdiff) > 1)
+			return 0;
+
+		break;
+	default:
+		printf("Invalid chess piece detected\n");
+		return 0;
+	}
 
 	return 1;
 }
@@ -111,8 +212,7 @@ move_piece(chess_state *game, int crow, int ccol, int trow, int tcol)
 void
 move(chess_state *game, const char *input)
 {
-	int crow, ccol, trow, tcol;
-
+	int crow, ccol, trow, tcol; 
 	if (strlen(input) != 4) {
 		printf("Invalid input\n\n");
 		return;
