@@ -36,17 +36,33 @@ init_board(chess_state *game)
 	game->board[BOARD_HEIGHT - 1][1] = WHITE_BLOCK(BISHOP, QUEEN);
 	game->board[BOARD_HEIGHT - 1][2] = WHITE_BLOCK(KING, BISHOP);
 	game->board[BOARD_HEIGHT - 1][3] = WHITE_BLOCK(KNIGHT, ROOK);
+
+	game->flags = BIT(WHITE_TURN);
 }
 
 void
 print_block(BYTE block)
 {
-	BYTE l = LEFT_PIECE(block) & 0x7;
-	BYTE r = RIGHT_PIECE(block) & 0x7;
+	BYTE l = LEFT_PIECE(block);
+	BYTE r = RIGHT_PIECE(block);
 
-	printf(" %c %c",
-	       l ? pieces[l - 1] : 'x',
-	       r ? pieces[r - 1] : 'x');
+	if (l) {
+		printf(" %s%c%s",
+		       l & BIT(WHITE_PIECE) ? BLUE : RED,
+		       pieces[(l & 0x7) - 1],
+		       RESET);
+	} else {
+		printf(" x");
+	}
+
+	if (r) {
+		printf(" %s%c%s",
+		       r & BIT(WHITE_PIECE) ? BLUE : RED,
+		       pieces[(r & 0x7) - 1],
+		       RESET);
+	} else {
+		printf(" x");
+	}
 }
 
 void
@@ -140,6 +156,10 @@ valid_movement(chess_state *game, int crow, int ccol, int trow, int tcol)
 	BYTE current = read_at(game, crow, ccol);
 	BYTE target = read_at(game, trow, tcol);
 	int rel, rdiff, cdiff;
+
+	if (((current & BIT(WHITE_PIECE)) >> WHITE_PIECE) ^
+	    ((game->flags & BIT(WHITE_TURN)) >> WHITE_TURN))
+		return 0;
 
 	if ((rel = relationship(current, target)) == FRIENDLY)
 		return 0;
@@ -238,7 +258,9 @@ move(chess_state *game, const char *input)
 
 	if (valid_movement(game, crow, ccol, trow, tcol)) {
 		move_piece(game, crow, ccol, trow, tcol);
+
 		print_board(game);
+		game->flags ^= BIT(WHITE_TURN);
 	} else {
 		printf("Invalid movement\n\n");
 	}

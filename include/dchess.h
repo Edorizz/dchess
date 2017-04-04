@@ -8,6 +8,12 @@
 /* Extra */
 #define COMMAND_COUNT	4
 
+/* Colors */
+#define RESET		"\x1B[0m"
+#define RED		"\x1B[31m"
+#define GREEN		"\x1B[32m"
+#define BLUE		"\x1B[34m"
+
 /* Flags */
 #define NONE		0
 #define FRIENDLY	1

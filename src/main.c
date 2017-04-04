@@ -17,7 +17,7 @@ main(int argc, char **argv)
 	init_board(&game);
 	while (!(game.flags & BIT(QUIT))) {
 		do {
-			printf("> ");
+			printf("(%c): ", game.flags & BIT(WHITE_TURN) ? 'w' : 'b');
 
 			fgets(input_buffer, MAX_INPUT, stdin);
 			if ((new_line = strchr(input_buffer, '\n')) == NULL) {
