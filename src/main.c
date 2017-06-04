@@ -3,7 +3,7 @@
 #include <string.h>
 #include <ctype.h>
 /* Chess header file */
-#include <dchess.h>
+#include "dchess.h"
 
 #define MAX_INPUT	256
 
@@ -17,7 +17,10 @@ main(int argc, char **argv)
 	init_board(&game);
 	while (!(game.flags & BIT(QUIT))) {
 		do {
-			printf("(%c): ", game.flags & BIT(WHITE_TURN) ? 'w' : 'b');
+			printf("black(%d,%d) | white(%d,%d)\n",
+			       game.black_king.y, game.black_king.x,
+			       game.white_king.y, game.white_king.x);
+			printf("(%c | %.2x): ", game.flags & BIT(WHITE_TURN) ? 'w' : 'b', game.flags);
 
 			fgets(input_buffer, MAX_INPUT, stdin);
 			if ((new_line = strchr(input_buffer, '\n')) == NULL) {
@@ -25,8 +28,6 @@ main(int argc, char **argv)
 				/* Clear input */
 				while (getchar() != '\n')
 					;
-
-				continue;
 			}
 		} while (!new_line);
 		*new_line = '\0';
@@ -40,8 +41,8 @@ main(int argc, char **argv)
 		new_line = data;
 		while (isgraph(*new_line))
 			++new_line;
-
 		*new_line = '\0';
+
 		printf("Your input was \"%s\"\n", data);
 
 		/* Check if input is a command */
@@ -53,9 +54,17 @@ main(int argc, char **argv)
 		}
 
 		/* If it isn't a command, interpret it as a piece movement */
-		if (i == COMMAND_COUNT)
+		if (i == COMMAND_COUNT) {
 			move(&game, data);
+		}
+
+		if (game.flags & BIT(WHITE_CHECK)) {
+			printf(BLUE "White is on check!\n" RESET);
+		} else if (game.flags & BIT(BLACK_CHECK)) {
+			printf(RED "Red is on check!\n" RESET);
+		}
 	}
 
 	return 0;
 }
+

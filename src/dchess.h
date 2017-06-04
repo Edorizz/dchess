@@ -20,9 +20,11 @@
 #define ENEMY		2
 
 /* Bit flags */
+#define QUIT		0
+#define WHITE_TURN	1
 #define WHITE_PIECE	3
-#define WHITE_TURN	0
-#define QUIT		1
+#define WHITE_CHECK	4
+#define BLACK_CHECK	5
 
 /* Bit manipluation */
 #define BIT(n)			(1 << (n))
@@ -35,11 +37,16 @@
 
 typedef unsigned char BYTE;
 
-enum chess_pieces { PAWN = 1, ROOK, KNIGHT, BISHOP, QUEEN, KING, MAX_PIECES };
+enum chess_pieces { BLANK, PAWN, ROOK, KNIGHT, BISHOP, QUEEN, KING, MAX_PIECES };
+
+typedef struct {
+	int x, y;
+} point;
 
 typedef struct {
 	BYTE board[BOARD_HEIGHT][BOARD_WIDTH / 2];
 	BYTE flags;
+	point black_king, white_king;
 } chess_state;
 
 typedef struct {
@@ -56,9 +63,11 @@ void print_board(chess_state *game);
 BYTE read_at(chess_state *game, int row, int col);
 void write_at(chess_state *game, int row, int col, BYTE piece);
 int  relationship(BYTE p1, BYTE p2);
-int  valid_movement(chess_state *game, int crow, int ccol, int trow, int tcol);
+int  valid_move(chess_state *game, int crow, int ccol, int trow, int tcol);
+int  check(chess_state *game);
 void move_piece(chess_state *game, int crow, int ccol, int trow, int tcol);
 void move(chess_state *game, const char *input);
+
 /* Commands */
 void cmd_exit(chess_state *game);
 void cmd_help(chess_state *game);
